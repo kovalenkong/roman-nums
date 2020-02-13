@@ -42,11 +42,12 @@ In the XII century, England conquered Wales, and at the beginning of the XVIII c
 """
 
 >>> worker = RText(text)
->>> worker.from_roman()
+...
+>>> worker.from_roman() # Convert all roman numbers to arabic
 In 1066, Norman troops <...>.
 In the 12 century, England conquered Wales, and at the beginning of the 18 century <...>.
 
->>> worker.to_roman()
+>>> worker.to_roman()   # Convert all integers to roman numbers
 In MLXVI, Norman troops <...>.
 In the XII century, England conquered Wales, and at the beginning of the XVIII century <...>.
 
