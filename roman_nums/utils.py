@@ -20,12 +20,8 @@ def rn_validator(rn: str, case: int = CASE_UPPER):
     elif case not in (CASE_UPPER, CASE_LOWER, CASE_IGNORE):
         raise RomanValidationError("Not found type of case. Possible values: -1, 0 or 1")
 
-    regex = r"\b(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})\b"
-    regex_l = r"\b(?=[mdclxvi])(m*)(c[md]|d?c{0,3})(x[cl]|l?x{0,3})(i[xv]|v?i{0,3})\b"
-    if rn == "N" and case in (CASE_UPPER, CASE_IGNORE):
-        return True
-    elif rn == "n" and case in (CASE_LOWER, CASE_IGNORE):
-        return True
+    regex = r"\b(N)\b|\b(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})\b"
+    regex_l = r"\b(n)\b|\b(?=[mdclxvi])(m*)(c[md]|d?c{0,3})(x[cl]|l?x{0,3})(i[xv]|v?i{0,3})\b"
 
     if case == CASE_UPPER:
         return True if re.fullmatch(regex, rn) is not None else False
@@ -43,8 +39,8 @@ class RText:
         self.text = text
 
         self.__regex_int = r"(?<![.,])\b\d+\b(?![.,]\d+)"
-        self.__regex_roman = r"\b(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})\b"
-        self.__regex_roman_l = r"\b(?=[mdclxvi])(m*)(c[md]|d?c{0,3})(x[cl]|l?x{0,3})(i[xv]|v?i{0,3})\b"
+        self.__regex_roman = r"\bN\b|\b(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})\b"
+        self.__regex_roman_l = r"\bn\b|\b(?=[mdclxvi])(m*)(c[md]|d?c{0,3})(x[cl]|l?x{0,3})(i[xv]|v?i{0,3})\b"
 
     def rnb(self, case: int = CASE_UPPER):
         """
@@ -61,7 +57,7 @@ class RText:
         elif case == CASE_LOWER:
             return [r.group() for r in re.finditer(self.__regex_roman_l, self.text) if len(r.group()) > 0]
         elif case == CASE_IGNORE:
-            return [r.group() for r in re.finditer(self.__regex_roman, self.text, re.IGNORECASE) if len(r.group()) != 0]
+            return [r.group() for r in re.finditer(self.__regex_roman, self.text, re.IGNORECASE) if len(r.group()) > 0]
 
     def nb(self):
         """
@@ -69,7 +65,7 @@ class RText:
         :return: list of all found integers.
         :rtype: list
         """
-        return re.findall(self.__regex_int, self.text)
+        return [int(x) for x in re.findall(self.__regex_int, self.text)]
 
     def from_roman(self, case: int = CASE_UPPER):
         """
@@ -90,6 +86,10 @@ class RText:
 
     @staticmethod
     def _repr_from_roman(rn):
+        if len(rn.group()) == 0:
+            return ""
+        if str(rn.group()).upper() == "N":
+            return "0"
         list_3 = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]
         list_2 = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"]
         list_1 = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
@@ -111,11 +111,10 @@ class RText:
         if case not in (CASE_UPPER, CASE_LOWER):
             raise RTextError("Not found type of case. Possible values: -1 or 1")
 
-        return re.sub(self.__regex_int, lambda n: self._repr_to_roman(n, case), self.text)
+        return re.sub(self.__regex_int, lambda n: self._repr_to_roman(int(n.group()), case), self.text)
 
     @staticmethod
     def _repr_to_roman(n, case):
-        n = int(n.group())
         if n == 0:
             return "N" if case == CASE_UPPER else "n"
         list_3 = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]

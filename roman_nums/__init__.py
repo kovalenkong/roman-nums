@@ -2,6 +2,10 @@
 import re
 from .errors import (RomanNumsError, RomanValidationError)
 
+__version__ = "0.0.1"
+__author__ = "Kovalenko Nikolay"
+__email__ = "kovalenko.n.r-g@yandex.ru"
+
 CASE_UPPER = 1
 CASE_LOWER = -1
 
@@ -14,18 +18,19 @@ def from_roman(rn: str, ignore_case: bool = False):
     :return: positive integer from roman number.
     :rtype: int
     """
-    pattern = r"^(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$"
+    pattern = r"^N|(?=[MDCLXVI])(M*)(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$"
     if not isinstance(rn, str):
         raise RomanNumsError(f"Invalid data type {type(rn)}, must be str")
-    elif (rn == "N") or (rn.upper() == "N" and ignore_case is True):
-        return 0
-    elif re.fullmatch(pattern, rn, re.IGNORECASE if ignore_case is True else 0) is None:
+    match = re.fullmatch(pattern, rn, re.IGNORECASE if ignore_case is True else False)
+    if match is None:
         raise RomanNumsError("Number not found")
+    if match.group().upper() == "N":
+        return 0
 
     list_3 = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]
     list_2 = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"]
     list_1 = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
-    gr = re.match(pattern, rn.upper()).groups()
+    gr = match.groups()
 
     result = sum([
         list_1.index(gr[3].upper()), list_2.index(gr[2].upper()) * 10,
@@ -49,7 +54,7 @@ def to_roman(n: int, case: int = CASE_UPPER):
     elif n == 0:
         return "N" if case == CASE_UPPER else "n"
     elif n < 0:
-        raise RomanNumsError("Only positive number")
+        raise RomanNumsError("Only positive integer")
 
     list_3 = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]
     list_2 = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"]
